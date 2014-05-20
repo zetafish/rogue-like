@@ -1,10 +1,18 @@
 (ns caves.ui.input
   (:require [caves.world :refer [random-world smooth-world]]
             [caves.ui.core :refer [->UI]]
+            [caves.entities.player :refer [make-player]]
             [lanterna.screen :as s]))
 
 (defn move [[x y] [dx dy]]
   [(+ x dx) (+ y dy)])
+
+(defn reset-game [game]
+  (let [fresh-world (random-world)]
+    (-> game
+        (assoc :world fresh-world)
+        (assoc-in [:world :player] (make-player fresh-world))
+        (assoc :uis [(->UI :play)]))))
 
 (defmulti process-input (fn [game input]
                           (:kind (last (:uis game)))))
@@ -27,9 +35,7 @@
     ))
 
 (defmethod process-input :start [game input]
-  (assoc game
-    :world (random-world)
-    :uis [(->UI :play)]))
+  (reset-game game))
 
 (defmethod process-input :win [game input]
   (assoc game :uis (if (= input :escape)
