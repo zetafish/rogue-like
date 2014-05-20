@@ -9,12 +9,6 @@
     (doseq [row (range rows)]
       (s/put-string screen 0 row blank))))
 
-(defn draw-crosshairs [screen vcols vrows]
-  (let [crosshair-x (int (/ vcols 2))
-        crosshair-y (int (/ vrows 2))]
-    (s/put-string screen crosshair-x crosshair-y "X" {:fg :red})
-    (s/move-cursor screen crosshair-x crosshair-y)))
-
 (defn draw-player [screen start-x start-y player]
   (let [[player-x player-y] (:location player)
         x (- player-x start-x)
