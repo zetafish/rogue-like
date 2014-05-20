@@ -61,12 +61,6 @@
         world (nth (iterate smooth-world world) 0)]
     world))
 
-;; (defn print-row [row]
-;;   (println (apply str (map :glyph row))))
-
-;; (defn print-world [world]
-;;   (dorun (map print-row (:tiles world))))
-
 (defn get-tile [world coord]
   (get-tile-from-tiles (:tiles world) coord))
 
