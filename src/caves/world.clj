@@ -1,4 +1,5 @@
-(ns caves.world)
+(ns caves.world
+  (:require [caves.coords :refer [neighbors]]))
 
 (def world-size [160 50])
 
@@ -74,7 +75,6 @@
   (set-tile world coord (:floor tiles)))
 
 (defn find-empty-tile [world]
-  (println "finding an empty tile")
   (loop [coord (random-coordinate)]
     (if (#{:floor} (get-tile-kind world coord))
       coord
@@ -85,6 +85,10 @@
                  (vals (:entities world)))))
 
 (defn is-empty? [world coord]
-  (and #{:floor} (get-tile-kind world coord))
-  (not (get-entity-at world coord)))
+  (and (#{:floor} (get-tile-kind world coord))
+       (not (get-entity-at world coord))))
 
+(defn find-empty-neighbor [world coord]
+  (let [candidates (filter #(is-empty? world %) (neighbors coord))]
+    (when (seq candidates)
+      (rand-nth candidates))))

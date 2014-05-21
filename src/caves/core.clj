@@ -2,17 +2,25 @@
   (:require [caves.ui.core :refer [->UI]]
             [caves.ui.drawing :refer [draw-game]]
             [caves.ui.input :refer [get-input process-input]]
+            [caves.entities.core :refer [tick]]
             [lanterna.screen :as s]))
 
 (defrecord World [])
+
 (defrecord Game [world uis input])
+
+(defn tick-entity [world entity]
+  (tick entity world))
+
+(defn tick-all [world]
+  (reduce tick-entity world (vals (:entities world))))
 
 (defn run-game [game screen]
   (loop [{:keys [input uis] :as game} game]
     (when-not (empty? uis))
     (draw-game game screen)
     (if (nil? input)
-      (recur (get-input game screen))
+      (recur (get-input (update-in game [:world] tick-all) screen))
       (recur (process-input (dissoc game :input) input)))))
 
 (defn new-game []
