@@ -80,3 +80,11 @@
       coord
       (recur (random-coordinate)))))
 
+(defn get-entity-at [world coord]
+  (first (filter #(= coord (:location %))
+                 (vals (:entities world)))))
+
+(defn is-empty? [world coord]
+  (and #{:floor} (get-tile-kind world coord))
+  (not (get-entity-at world coord)))
+
