@@ -20,24 +20,24 @@
                world))
 
 (extend-type Player Mobile
-             (move [this world dest]
-               {:pre [(can-move? this world dest)]}
+             (move [this dest world]
+               {:pre [(can-move? this dest world)]}
                (assoc-in world [:entities :player :location] dest))
-             (can-move? [this world dest]
+             (can-move? [this dest world]
                (is-empty? world dest)))
 
 (extend-type Player Digger
-             (dig [this world dest]
-               {:pre [(can-dig? this world dest)]}
+             (dig [this dest world]
+               {:pre [(can-dig? this dest world)]}
                (set-tile-floor world dest))
-             (can-dig? [this world dest]
+             (can-dig? [this dest world]
                (check-tile world dest #{:wall})))
 
 (extend-type Player Attacker
-             (attack [this world target]
+             (attack [this target world]
                {:pre [(satisfies? Destructible target)]}
                (let [damage 1]
-                 (take-damage target world damage))))
+                 (take-damage target damage world))))
 
 (defn make-player [location]
   (->Player :player "@" location :white))
@@ -47,7 +47,7 @@
         target (destination-coords (:location player) dir)
         entity-at-target (get-entity-at world target)]
     (cond
-     entity-at-target (attack player world entity-at-target)
-     (can-move? player world target) (move player world target)
-     (can-dig? player world target) (dig player world target)
+     entity-at-target (attack player entity-at-target world)
+     (can-move? player target world) (move player target world)
+     (can-dig? player target world) (dig player target world)
      :else world)))
