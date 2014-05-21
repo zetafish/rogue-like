@@ -9,11 +9,17 @@
     (doseq [row (range rows)]
       (s/put-string screen 0 row blank))))
 
-(defn draw-player [screen start-x start-y player]
+(defn draw-entity [screen start-x start-y {:keys [location glyph color]}]
+  (let [[entity-x entity-y] location
+        x (- entity-x start-x)
+        y (- entity-y start-y)]
+    (s/put-string screen x y glyph {:fg color})
+    (s/move-cursor screen x y)))
+
+(defn highlight-player [screen start-x start-y player]
   (let [[player-x player-y] (:location player)
         x (- player-x start-x)
         y (- player-y start-y)]
-    (s/put-string screen x y (:glyph player) {:fg :white})
     (s/move-cursor screen x y)))
 
 (defn draw-world [screen vrows vcols start-x start-y end-x end-y tiles]
@@ -59,14 +65,17 @@
     (:kind ui)))
 
 (defmethod draw-ui :play [ui game screen]
-  (let [[cols rows] screen-size
+  (let [world (:world game)
+        {:keys [tiles entities]} world
+        player (:player entities)
+        [cols rows] screen-size
         vcols cols
         vrows (dec rows)
-        player (get-in game [:world :entities :player])
-        tiles (get-in game [:world :tiles])
         [start-x start-y end-x end-y] (get-viewport-coords game (:location player) vcols vrows)]
     (draw-world screen vrows vcols start-x start-y end-x end-y tiles)
-    (draw-player screen start-x start-y player)
+    (doseq [entity (vals entities)]
+      (draw-entity screen start-x start-y entity))
+    (highlight-player screen start-x start-y player)
     (draw-hud screen game start-x start-y)))
 
 (defmethod draw-ui :start [ui game screen]
