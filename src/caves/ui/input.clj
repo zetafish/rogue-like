@@ -3,21 +3,26 @@
             [caves.ui.core :refer [->UI]]
             [caves.entities.player :refer [make-player move-player]]
             [caves.entities.lichen :refer [make-lichen]]
+            [caves.entities.bunny :refer [make-bunny]]
             [caves.world :refer [find-empty-tile]]
             [lanterna.screen :as s]))
 
 (defn move [[x y] [dx dy]]
   [(+ x dx) (+ y dy)])
 
-(defn add-lichen [world]
-  (let [{:as lichen :keys [id]} (make-lichen (find-empty-tile world))]
-    (assoc-in world [:entities id] lichen)))
+(defn add-creature [world make-creature]
+  (let [creature (make-creature (find-empty-tile world))]
+    (assoc-in world [:entities (:id creature)] creature)))
+
+(defn add-creatures [world make-creature n]
+  (nth (iterate #(add-creature % make-creature) world) n))
+
 
 (defn populate-world [world]
-  (let [world (assoc-in world [:entities :player]
-                        (make-player (find-empty-tile world)))
-        world (nth (iterate add-lichen world) 30)]
-    world))
+  (-> world
+      (add-creature make-player)
+      (add-creatures make-lichen 30)
+      (add-creatures make-bunny 20)))
 
 (defn reset-game [game]
   (let [fresh-world (random-world)]

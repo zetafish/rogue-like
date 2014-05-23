@@ -1,7 +1,11 @@
-(ns caves.entities.aspects.digger)
+(ns caves.entities.aspects.digger
+  (:require [caves.entities.core :refer [defaspect]]
+            [caves.entities.aspects.digger :refer [Digger dig can-dig?]]
+            [caves.world :refer [set-tile-floor check-tile]]))
 
-(defprotocol Digger
-  (dig [this target world]
-    "Dig a location".)
-  (can-dig? [this target world]
-    "Return whether the entity can dig the new location."))
+(defaspect Digger
+  (dig [this dest world]
+    {:pre [(can-dig? this dest world)]}
+    (set-tile-floor world dest))
+  (can-dig? [this dest world]
+    (check-tile world dest #{:wall})))
