@@ -4,6 +4,7 @@
             [caves.entities.player :refer [make-player move-player]]
             [caves.entities.lichen :refer [make-lichen]]
             [caves.entities.bunny :refer [make-bunny]]
+            [caves.entities.silverfish :refer [make-silverfish]]
             [caves.world :refer [find-empty-tile]]
             [lanterna.screen :as s]))
 
@@ -22,7 +23,8 @@
   (-> world
       (add-creature make-player)
       (add-creatures make-lichen 30)
-      (add-creatures make-bunny 20)))
+      (add-creatures make-bunny 20)
+      (add-creatures make-silverfish 15)))
 
 (defn reset-game [game]
   (let [fresh-world (random-world)]
