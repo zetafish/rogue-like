@@ -1,6 +1,5 @@
 (ns caves.entities.aspects.digger
   (:require [caves.entities.core :refer [defaspect]]
-            [caves.entities.aspects.digger :refer [Digger dig can-dig?]]
             [caves.world :refer [set-tile-floor check-tile]]))
 
 (defaspect Digger

@@ -10,7 +10,7 @@
    [caves.world :refer [find-empty-tile get-tile-kind set-tile-floor
                         get-entity-at is-empty? check-tile]]))
 
-(defrecord Player [id glyph location color])
+(defrecord Player [id glyph location color]) 
 
 (add-aspect Player Mobile)
 (add-aspect Player Digger)
