@@ -22,7 +22,8 @@
                :color :yellow
                :location location
                :hp 4
-               :max-hp 4}))
+               :max-hp 4
+               :name "bunny"}))
 
 
 

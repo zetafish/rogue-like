@@ -1,33 +1,34 @@
 (ns caves.entities.player
   (:require
-   [caves.entities.core :refer :all]
-   [caves.entities.core :refer [add-aspect]]
+   [caves.entities.core :refer [Entity add-aspect]]
    [caves.entities.aspects.mobile :refer [Mobile move can-move?]]
    [caves.entities.aspects.digger :refer [Digger dig can-dig?]]
    [caves.entities.aspects.attacker :refer [Attacker attack]]
-   [caves.entities.aspects.destructible :refer [Destructible take-damage]]
+   [caves.entities.aspects.destructible :refer [Destructible]]
+   [caves.entities.aspects.receiver :refer [Receiver]]
    [caves.coords :refer [destination-coords]]
-   [caves.world :refer [find-empty-tile get-tile-kind set-tile-floor
-                        get-entity-at is-empty? check-tile]]))
+   [caves.world :refer [get-entity-at]]))
 
 (defrecord Player [id glyph location color]) 
-
-(add-aspect Player Mobile)
-(add-aspect Player Digger)
-
 
 (extend-type Player Entity
              (tick [this world]
                world))
 
-(extend-type Player Attacker
-  (attack [this target world]
-    {:pre [(satisfies? Destructible target)]}
-    (let [damage 1]
-      (take-damage target damage world))))
+(add-aspect Player Mobile)
+(add-aspect Player Digger)
+(add-aspect Player Attacker)
+(add-aspect Player Destructible)
+(add-aspect Player Receiver)
 
 (defn make-player [location]
-  (->Player :player "@" location :white))
+  (map->Player {:id :player
+                :glyph "@"
+                :location location
+                :color :white
+                :hp 40
+                :max-hp 40
+                :attack 10}))
 
 (defn move-player [world dir]
   (let [player (get-in world [:entities :player])

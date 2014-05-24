@@ -5,5 +5,5 @@ pom.xml
 /.lein*
 /.nrepl*
 target/
-#.*#
-.*~
+#*#
+*~

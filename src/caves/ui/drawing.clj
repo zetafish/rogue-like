@@ -1,5 +1,6 @@
 (ns caves.ui.drawing
-  (:require [lanterna.screen :as s]))
+  (:require [lanterna.screen :as s]
+            [caves.util :refer [shear map2d enumerate]]))
 
 (def screen-size [80 24])
 
@@ -9,20 +10,20 @@
     (doseq [row (range rows)]
       (s/put-string screen 0 row blank))))
 
-(defn draw-entity [screen start-x start-y {:keys [location glyph color]}]
+(defn draw-entity [screen [start-x start-y] {:keys [location glyph color]}]
   (let [[entity-x entity-y] location
         x (- entity-x start-x)
         y (- entity-y start-y)]
     (s/put-string screen x y glyph {:fg color})
     (s/move-cursor screen x y)))
 
-(defn highlight-player [screen start-x start-y player]
+(defn highlight-player [screen [start-x start-y] player]
   (let [[player-x player-y] (:location player)
         x (- player-x start-x)
         y (- player-y start-y)]
     (s/move-cursor screen x y)))
 
-(defn draw-world [screen vrows vcols start-x start-y end-x end-y tiles]
+(defn draw-world [screen vrows vcols [start-x start-y] end-x end-y tiles]
   (doseq [[vrow-idx mrow-idx] (map vector
                                      (range 0 vrows)
                                      (range start-y end-y))
@@ -30,6 +31,13 @@
       (doseq [vcol-idx (range vcols)
               :let [{:keys [glyph color]} (row-tiles vcol-idx)]]
         (s/put-string screen vcol-idx vrow-idx glyph {:fg color}))))
+
+(defn draw-world [screen vrows vcols [ox oy] tiles]
+  (letfn [(render-tile [tile]
+            [(:glyph tile) {:fg (:color tile)}])]
+    (let [tiles (shear tiles ox oy vcols vrows)
+          sheet (map2d render-tile tiles)]
+      (s/put-sheet screen 0 0 sheet))))
 
 (defn get-viewport-coords [game [player-x player-y] vcols vrows]
   (let [location (:location game)
@@ -53,7 +61,7 @@
         start-y (- end-y vrows)]
     [start-x start-y end-x end-y]))
 
-(defn draw-hud [screen game start-x start-y]
+(defn draw-hud [screen game]
   (let [hud-row (dec (second (s/get-size screen)))
         player (get-in game [:world :entities :player])
         {:keys [location hp max-hp]} player
@@ -61,6 +69,10 @@
         info (str "hp [" hp "/" max-hp "]")
         info (str info " loc: [" x "-" y "]")]
     (s/put-string screen 0 hud-row info)))
+
+(defn draw-messages [screen messages]
+  (doseq [[i msg] (enumerate messages)]
+    (s/put-string screen 0 i msg {:fg :black :bg :white})))
 
 (defmulti draw-ui
   (fn [ui game screen]
@@ -73,12 +85,13 @@
         [cols rows] screen-size
         vcols cols
         vrows (dec rows)
-        [start-x start-y end-x end-y] (get-viewport-coords game (:location player) vcols vrows)]
-    (draw-world screen vrows vcols start-x start-y end-x end-y tiles)
+        origin (get-viewport-coords game (:location player) vcols vrows)]
+    (draw-world screen vrows vcols origin tiles)
     (doseq [entity (vals entities)]
-      (draw-entity screen start-x start-y entity))
-    (highlight-player screen start-x start-y player)
-    (draw-hud screen game start-x start-y)))
+      (draw-entity screen origin entity))
+    (draw-hud screen game)
+    (draw-messages screen (:messages player))
+    (highlight-player screen origin player)))
 
 (defmethod draw-ui :start [ui game screen]
   (s/put-string screen 0 0 "Welcome to the caves of Clojure")

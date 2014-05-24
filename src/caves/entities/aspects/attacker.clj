@@ -1,12 +1,22 @@
 (ns caves.entities.aspects.attacker
-  (:require [caves.entities.aspects.destructible :refer [defense-value
-                                                         take-damage]]))
+  (:require
+   [caves.entities.aspects.destructible :refer [Destructible defense-value
+                                                take-damage]]
+   [caves.entities.core :refer [defaspect]]
+   [caves.entities.aspects.receiver :refer [send-message]]))
 
-(defprotocol Attacker
+(declare get-damage)
+
+(defaspect Attacker
   (attack [this target world]
     {:pre [(satisfies? Destructible target)]}
     (let [damage (get-damage this target world)]
-      (take-damage target damage)))
+      (->> world
+           (take-damage target damage)
+           (send-message this "You strike the %s for %d damage!"
+                         [(:name target) damage])
+           (send-message target "The %s strikes you for %d damage!"
+                         [(:name this) damage]))))
   (attack-value [this world]
     (get this :attack 1)))
 

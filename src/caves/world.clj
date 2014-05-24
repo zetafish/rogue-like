@@ -1,5 +1,6 @@
 (ns caves.world
-  (:require [caves.coords :refer [neighbors]]))
+  (:require [caves.coords :refer [neighbors]]
+            [caves.util :refer [abs]]))
 
 (def world-size [160 50])
 
@@ -93,7 +94,17 @@
     (when (seq candidates)
       (rand-nth candidates))))
 
-(defn check-tile
-  "Check that the tile at the destination passes the given predicate."
-  [world dest pred]
+(defn check-tile [world dest pred]
   (pred (get-tile-kind world dest)))
+
+(defn radial-distance
+  [[x1 y1] [x2 y2]]
+  (max (abs (- x1 x2))
+       (abs (- y1 y2))))
+
+(defn get-entities-around
+  ([world coord] (get-entities-around world coord 1))
+  ([world coord radius]
+     (filter #(<= (radial-distance coord (:location %))
+                  radius)
+             (vals (:entities world)))))
